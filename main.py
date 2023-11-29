@@ -6,7 +6,6 @@ LALPHA = UALPHA.lower()
 KEYWORDS = ['balik','bool','des','desimal', 'doble', 'int','integro','ipakita', 'kar','karakter', 'kundi', 'kung', 'pangungusap', 'para', 'pasok', 'tigil', 'walangbalik']
 RESWORDS = ['mali','magpatuloy','pumuntasa','simula', 'tama']
 
-
 # ERRORS
 
 class Error:
@@ -53,6 +52,7 @@ class Position:
 
 # TOKENS
 
+#arithmetic
 inte = 'int'
 flt = 'float'
 add = 'addition'
@@ -61,14 +61,38 @@ mul = 'multiplication'
 div = 'division'
 mod = 'modulo'
 exp = 'exponent'
-l_par = 'left parenthesis'
-r_par = 'right parenthesis'
+
+#relational
+eq_to = 'equal to'
 not_eq = 'not'
 l_than = 'less than'
+l_eq = 'less than/equal to'
 g_than = 'greater than'
-l_and = 'and'
-assgn = 'assignment'
+g_eq = 'greater than/equal to'
 
+#logical
+l_and = 'and'
+l_or = 'or'
+
+#assignment
+assgn = 'assignment'
+add_assgn = 'addition assignment'
+sub_assgn = 'subtraction assignment'
+mul_assgn = 'multiplication assignment'
+div_assgn = 'division assignment'
+
+#unary
+inc = 'increment'
+dec = 'decrement'
+
+#comments
+s_com = 'single line comment'
+m1_com = 'multi line comment opening'
+m2_com = 'multi line comment closing'
+
+#delimeters
+l_par = 'left parenthesis'
+r_par = 'right parenthesis'
 
 
 class Token:
@@ -103,21 +127,50 @@ class Lexer:
             if self.current_char in ' \t':
                 self.advance()
             elif self.current_char in DIGITS:
-                tokens.append(self.make_number())
+                tokens.append(self.digit())
             elif self.current_char in UALPHA + LALPHA:
-                tokens.append(self.identifier())
-            elif self.current_char == "+":
-                tokens.append(Token(add))
+                tokens.append(self.str())
+            elif self.current_char == '+':
                 self.advance()
+                if self.current_char == '+':
+                    tokens.append(Token(inc))
+                    self.advance()
+                elif self.current_char == '=':
+                    tokens.append(Token(add_assgn))
+                    self.advance()
+                else:
+                    tokens.append(Token(sub))
+                    self.advance()
             elif self.current_char == '-':
-                tokens.append(Token(sub))
                 self.advance()
+                if self.current_char == '-':
+                    tokens.append(Token(dec))
+                    self.advance()
+                elif self.current_char == '=':
+                    tokens.append(Token(sub_assgn))
+                    self.advance()
+                else:
+                    tokens.append(Token(sub))
+                    self.advance()
             elif self.current_char == '*':
-                tokens.append(Token(mul))
                 self.advance()
+                if self.current_char == '=':
+                    tokens.append(Token(mul_assgn))
+                    self.advance()
+                else:
+                    tokens.append(Token(mul))
+                    self.advance()
             elif self.current_char == '/':
-                tokens.append(Token(div))
                 self.advance()
+                if self.current_char == '=':
+                    tokens.append(Token(div_assgn))
+                    self.advance()
+                elif self.current_char == '/':
+                    tokens.append(Token(l_or))
+                    self.advance()
+                else:
+                    tokens.append(Token(div))
+                    self.advance()
             elif self.current_char == '(':
                 tokens.append(Token(lpar))
                 self.advance()
@@ -131,20 +184,48 @@ class Lexer:
                 tokens.append(Token(exp))
                 self.advance()
             elif self.current_char == '=':
-                tokens.append(Token(assgn))
                 self.advance()
+                if self.current_char == '=':
+                    tokens.append(Token(eq_to))
+                    self.advance()
+                else:
+                    tokens.append(Token(assgn))
+                    self.advance()
             elif self.current_char == '~':
-                tokens.append(Token(not_eq))
                 self.advance()
+                if self.current_char == '^':
+                    tokens.append(Token(m2_com))
+                    self.advance()
+                else:
+                    tokens.append(Token(not_eq))
+                    self.advance()
             elif self.current_char == '<':
-                tokens.append(Token(l_than))
                 self.advance()
+                if self.current_char == '=':
+                    tokens.append(Token(l_eq))
+                    self.advance()
+                else:
+                    tokens.append(Token(l_than))
+                    self.advance()
             elif self.current_char == '>':
-                tokens.append(Token(g_than))
-                self.advance()
+                    self.advance()
+                    if self.current_char == '=':
+                        tokens.append(Token(g_eq))
+                        self.advance()
+                    else:
+                        tokens.append(Token(g_than))
+                        self.advance()
             elif self.current_char == '@':
                 tokens.append(Token(l_and))
                 self.advance()
+            elif self.current_char == '^':
+                self.advance()
+                if self.current_char == '~':
+                    tokens.append(Token(m1_com))
+                    self.advance()
+                else:
+                    tokens.append(Token(s_com))
+                    self.advance()
             else:
                 pos_start = self.pos.copy()
                 char = self.current_char
@@ -153,7 +234,7 @@ class Lexer:
 
         return tokens, None
 
-    def make_number(self):
+    def digit(self):
         num_str = ''
         dot_count = 0
 
@@ -171,7 +252,7 @@ class Lexer:
         else:
             return Token(flt, float(num_str))
 
-    def identifier(self):
+    def str(self):
         str = ''
         while self.current_char != None and (self.current_char in UALPHA or self.current_char in LALPHA):
             str += self.current_char
