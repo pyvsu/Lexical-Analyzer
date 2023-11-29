@@ -5,6 +5,7 @@ UALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 LALPHA = UALPHA.lower()
 KEYWORDS = ['balik','bool','des','desimal', 'doble', 'int','integro','ipakita', 'kar','karakter', 'kundi', 'kung', 'pangungusap', 'para', 'pasok', 'tigil', 'walangbalik']
 RESWORDS = ['mali','magpatuloy','pumuntasa','simula', 'tama']
+NOISEWORDS = ['imal', 'egro', 'akter']
 
 # ERRORS
 
@@ -23,7 +24,7 @@ class Error:
 
 class IllegalCharError(Error):
     def __init__(self, pos_start, pos_end, details):
-        super().__init__(pos_start, pos_end, 'Illegal Character', details)
+        super().__init__(pos_start, pos_end, 'Invalid', details)
 
 
 # POSITION
@@ -93,6 +94,11 @@ m2_com = 'multi line comment closing'
 #delimeters
 l_par = 'left parenthesis'
 r_par = 'right parenthesis'
+semicln = 'semicolon'
+l_brack = 'left bracket'
+r_brack = 'right bracket'
+num_sign = "number sign"
+open_q = "opening quote"
 
 
 class Token:
@@ -139,7 +145,7 @@ class Lexer:
                     tokens.append(Token(add_assgn))
                     self.advance()
                 else:
-                    tokens.append(Token(sub))
+                    tokens.append(Token(add))
                     self.advance()
             elif self.current_char == '-':
                 self.advance()
@@ -226,6 +232,21 @@ class Lexer:
                 else:
                     tokens.append(Token(s_com))
                     self.advance()
+            elif self.current_char == ';':
+                tokens.append(Token(semicln))
+                self.advance()
+            elif self.current_char == '[':
+                tokens.append(Token(l_brack))
+                self.advance()
+            elif self.current_char == ']':
+                tokens.append(Token(r_brack))
+                self.advance()
+            elif self.current_char == '#':
+                tokens.append(Token(num_sign))
+                self.advance()
+            elif self.current_char == '"':
+                tokens.append(Token(open_q))
+                self.advance()
             else:
                 pos_start = self.pos.copy()
                 char = self.current_char
@@ -260,7 +281,9 @@ class Lexer:
         if str in KEYWORDS:
             return Token('keyword', str)
         elif str in RESWORDS:
-            return Token('reserved words', str)
+            return Token('reserved word', str)
+        elif str in NOISEWORDS:
+            return Token('noise word', str)
         else:
             return Token('identifier', str)
 
