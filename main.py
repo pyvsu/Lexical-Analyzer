@@ -63,12 +63,10 @@ mod = 'modulo'
 exp = 'exponent'
 l_par = 'left parenthesis'
 r_par = 'right parenthesis'
-eq_to = 'equal to'
 not_eq = 'not'
 l_than = 'less than'
 g_than = 'greater than'
 l_and = 'and'
-l_or = 'or'
 assgn = 'assignment'
 
 
@@ -137,6 +135,15 @@ class Lexer:
                 self.advance()
             elif self.current_char == '~':
                 tokens.append(Token(not_eq))
+                self.advance()
+            elif self.current_char == '<':
+                tokens.append(Token(l_than))
+                self.advance()
+            elif self.current_char == '>':
+                tokens.append(Token(g_than))
+                self.advance()
+            elif self.current_char == '@':
+                tokens.append(Token(l_and))
                 self.advance()
             else:
                 pos_start = self.pos.copy()
