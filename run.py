@@ -20,6 +20,6 @@ if os.path.isfile(file_path) and file_path.endswith(allowed_extension):
         else:
             print(result)
 else:
-    print(f"File '{file_path}' either doesn't exist or doesn't have the '{allowed_extension}' extension.")
+    print(f"File '{file_path}' doesn't have the '{allowed_extension}' extension.")
 
 
